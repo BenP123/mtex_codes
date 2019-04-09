@@ -10,7 +10,7 @@ home; %hide all the items in the command window, better than clc
 fname = 'n60_750x_750nm_step'
 % fname = '20190213_nitronic_60_test_w_pen_on_sample.h5';
 
-% convert bcf to hdf5? 
+% convert bcf to hdf5?
 conv_yes = 0; % 0 for no
 
 % run in this dir
@@ -38,8 +38,7 @@ fname = [fname '.h5'];
 material = 'Nitronic_60';
 [ebsd,header] = loadEBSD_h5(fname)
 
-%% import phase lists 
-
+%% import phase lists
 
 %% visually check the result
 %figure('Position',PlotData.ssize)
@@ -68,7 +67,7 @@ plot(ebsd);
 FigH.Quality=figure;
 plot(ebsd,ebsd.prop.RadonQuality); colormap('gray')
 
-%% pole figures 
+%% pole figures
 phase = 'Ferrite, bcc (New)';
 % calculate an ODF for the Ferrite phase
 odf = calcODF(ebsd(phase).orientations,'halfwidth',5*degree);
