@@ -7,20 +7,69 @@ home; %hide all the items in the command window, better than clc
 
 %% import things
 % file name - this file is output by the tool BCF
-fname = 'n60_750x_750nm_step'
-% fname = '20190213_nitronic_60_test_w_pen_on_sample.h5';
+raw_data_dir = 'C:\Users\bop15\Desktop\EBSD\raw_data\';
+[file,path] = uigetfile({'*.bcf';'*h5';'*.ctf'},'Pick your EBSD file',raw_data_dir);
+if isequal(file,0)
+   disp('User selected Cancel');
+else
+   disp(['User selected ', fullfile(path,file)]);
+end
 
-% convert bcf to hdf5?
-conv_yes = 0; % 0 for no
-
-% run in this dir
-InputUser.BCF_folder = cd;
-InputUser.HDF5_folder = InputUser.BCF_folder;
-InputUser.BCF2HDF5_loc='C:\Users\bop15\Desktop\EBSD\BCF2HDF5\BCF2HDF5cmd.exe';
-InputUser.EBSD_File = fname;
+%% convert bcf to hdf5 if you pick a bcf
+file_type = file(end-2:end);
+% catch h5
+if file_type == '.h5'; file_type = 'h5'; end
 
 
-BCF_H5Conv(InputUser)
+if strcmp(file_type, 'bcf')
+    % check the hdf5 doesn't already exist
+    if exist([path file(1:end-3) 'h5'], 'file') == 2
+        disp('Converted hdf5 file exists, will use that instead')
+        
+        % switch to the already converted hdf5 file
+        file = [file(1:end-3) 'h5'];
+        file_type = 'h5';
+        disp(['Swapped to ' file]) 
+    else       
+        disp('Converting bcf to hdf5 ...')
+        
+        % run in this dir
+        InputUser.BCF_folder = path;
+        InputUser.HDF5_folder = InputUser.BCF_folder;
+        InputUser.BCF2HDF5_loc='C:\Users\bop15\Desktop\EBSD\BCF2HDF5\BCF2HDF5cmd.exe';
+        InputUser.EBSD_File = file(1:end-4);
+        BCF_H5Conv(InputUser)
+        disp('Conversion done...')
+        disp('Now EBSD data are hdf5')
+        % switch to newly converted h5 file
+        file_type = 'h5';
+        file = [file(1:end-3) 'h5'];
+    end
+elseif strcmp(file_type, 'h5')
+    disp('EBSD data are already hdf5')
+elseif strcmp(file_type, 'ctf')
+    disp('EBSD data are ctf')
+else 
+    disp('Your EBSD is wrong. It should be hdf5, bcf, ctf!')
+end
+
+%% load the EBSD
+Full_file = [path file];
+
+if strcmp(file_type, 'bcf')
+    disp("Can't load EBSD data is they are bcf format! Something has gone wrong...")
+elseif strcmp(file_type, 'h5')
+    EBSD = loadEBSD_h5(Full_file);
+elseif strcmp(file_type, 'ctf')
+    EBSD = loadEBSD_ctf(Full_file);
+else 
+    disp('Make sure the converter is working or your data are hdf5 or ctf.')
+end
+
+
+    
+    
+
 
 
 
