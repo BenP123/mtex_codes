@@ -1,7 +1,7 @@
 %% my masterful MTEX doing script
 
 clear; %clear variables
-close all; %close all figures
+% close all; %close all figures
 home; %hide all the items in the command window, better than clc
 
 
@@ -76,7 +76,7 @@ setMTEXpref('zAxisDirection','outOfPlane');
 %% import the h5 file to MTEX
 % header is a struct which contains all the microscope data
 
-%% import phase lists
+% import phase lists
 
 %% visually check the result
 %figure('Position',PlotData.ssize)
@@ -136,8 +136,8 @@ plot(ebsd,ebsd.prop.RadonQuality); colormap('gray')
 %% find the grains 
 
 grains_raw = calcGrains(ebsd('indexed'));
-figure
-plot(grains_raw)
+% figure
+% plot(grains_raw)
 
 gbThreshold = 5*degree; %set the MSet for the grain boundary angle threshold
 [grains,ebsd.grainId] = calcGrains(ebsd('indexed'),'angle',gbThreshold);
