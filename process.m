@@ -59,20 +59,12 @@ Full_file = [path file];
 if strcmp(file_type, 'bcf')
     disp("Can't load EBSD data is they are bcf format! Something has gone wrong...")
 elseif strcmp(file_type, 'h5')
-    EBSD = loadEBSD_h5(Full_file);
+    [ebsd,header] = loadEBSD_h5(Full_file);
 elseif strcmp(file_type, 'ctf')
-    EBSD = loadEBSD_ctf(Full_file);
+    [ebsd,header] = loadEBSD_ctf(Full_file);
 else 
     disp('Make sure the converter is working or your data are hdf5 or ctf.')
 end
-
-
-    
-    
-
-
-
-
 
 %% set up plotting
 % get the screen size from the computer - useful for full sizing figures
@@ -83,9 +75,6 @@ setMTEXpref('zAxisDirection','outOfPlane');
 
 %% import the h5 file to MTEX
 % header is a struct which contains all the microscope data
-fname = [fname '.h5'];
-material = 'Nitronic_60';
-[ebsd,header] = loadEBSD_h5(fname)
 
 %% import phase lists
 
@@ -116,30 +105,64 @@ plot(ebsd);
 FigH.Quality=figure;
 plot(ebsd,ebsd.prop.RadonQuality); colormap('gray')
 
-%% pole figures
-phase = 'Ferrite, bcc (New)';
-% calculate an ODF for the Ferrite phase
-odf = calcODF(ebsd(phase).orientations,'halfwidth',5*degree);
-% decide on the representations we want in the PDF
-h = Miller({1,0,0},{0,1,1},{1,1,1},odf.CS);
-% set the range for the PDF plotter - I know the xRandom settings here
-pf_range=0.1:0.5:5;
-% plot the probability distribution functions, as needed for the
-plotPDF(odf,h,'upper','projection','eangle','contourf',pf_range,'minmax')
-mtexColorbar
+% %% pole figures
+% phase = 'Ferrite, bcc (New)';
+% % calculate an ODF for the Ferrite phase
+% odf = calcODF(ebsd(phase).orientations,'halfwidth',5*degree);
+% % decide on the representations we want in the PDF
+% h = Miller({1,0,0},{0,1,1},{1,1,1},odf.CS);
+% % set the range for the PDF plotter - I know the xRandom settings here
+% pf_range=0.1:0.5:5;
+% % plot the probability distribution functions, as needed for the
+% plotPDF(odf,h,'upper','projection','eangle','contourf',pf_range,'minmax')
+% mtexColorbar
+% % remove what is not needed later
+% clear h odf pf_range
+% 
+% figure
+% phase = 'Austenite, fcc (New)';
+% % calculate an ODF for the Ferrite phase
+% odf = calcODF(ebsd(phase).orientations,'halfwidth',5*degree);
+% % decide on the representations we want in the PDF
+% h = Miller({1,0,0},{0,1,1},{1,1,1},odf.CS);
+% % set the range for the PDF plotter - I know the xRandom settings here
+% pf_range=0.1:0.5:5;
+% % plot the probability distribution functions, as needed for the
+% plotPDF(odf,h,'upper','projection','eangle','contourf',pf_range,'minmax')
+% mtexColorbar
+% % remove what is not needed later
+% clear h odf pf_range
+
+%% find the grains 
+
+grains_raw = calcGrains(ebsd('indexed'));
+figure
+plot(grains_raw)
+
+gbThreshold = 5*degree; %set the MSet for the grain boundary angle threshold
+[grains,ebsd.grainId] = calcGrains(ebsd('indexed'),'angle',gbThreshold);
+
+% Remove small grains -
+% e.g. misindexed points, and grains that are smaller than we want explore
+smallGrains = 10; % in pixels
+
+% cull the graindata to select only those with a grain size greater than the
+% small grains threshold values
+grains = grains(grains.area >= smallGrains); %remove grains
+
+% and throw away these measurements from the ebsd data set
+ebsd = ebsd(grains);
+
+% re-number the grain indexing
+[grains,ebsd.grainId,ebsd.mis2mean] = calcGrains(ebsd('indexed'),'angle',gbThreshold);
+
+% and smooth the grain boundaries a bit to avoid staircasing effect
+% this should be done before denoising the ebsd data
+grains = smooth(grains,3);
+
 % remove what is not needed later
-clear h odf pf_range
+clear smallGrains gbThreshold
 
 figure
-phase = 'Austenite, fcc (New)';
-% calculate an ODF for the Ferrite phase
-odf = calcODF(ebsd(phase).orientations,'halfwidth',5*degree);
-% decide on the representations we want in the PDF
-h = Miller({1,0,0},{0,1,1},{1,1,1},odf.CS);
-% set the range for the PDF plotter - I know the xRandom settings here
-pf_range=0.1:0.5:5;
-% plot the probability distribution functions, as needed for the
-plotPDF(odf,h,'upper','projection','eangle','contourf',pf_range,'minmax')
-mtexColorbar
-% remove what is not needed later
-clear h odf pf_range
+plot(grains)
+
