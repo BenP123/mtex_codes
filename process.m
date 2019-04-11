@@ -80,20 +80,20 @@ setMTEXpref('zAxisDirection','outOfPlane');
 
 %% visually check the result
 %figure('Position',PlotData.ssize)
-subplot(2,3,1),
-plot(ebsd,ebsd.prop.X_BEAM,'micronbar','off','parent',gca); title('XBeamPosition')
-subplot(2,3,2),
-plot(ebsd,ebsd.prop.Y_BEAM,'micronbar','off','parent',gca); title('YBeamPosition')
-subplot(2,3,3),
-plot(ebsd,header.SEM_Image./256,'micronbar','off','parent',gca);
-title('SEM Image')
-subplot(2,3,4), plot(ebsd,ebsd.x,'micronbar','off','parent',gca);
-title('X-Sample Position')
-subplot(2,3,5), plot(ebsd,ebsd.y,'micronbar','off','parent',gca);
-title('Y-Sample Position')
-subplot(2,3,6),
-plot(ebsd,ebsd.prop.RadonQuality,'micronbar','off','parent',gca);
-title('Quality')
+% subplot(2,3,1),
+% plot(ebsd,ebsd.prop.X_BEAM,'micronbar','off','parent',gca); title('XBeamPosition')
+% subplot(2,3,2),
+% plot(ebsd,ebsd.prop.Y_BEAM,'micronbar','off','parent',gca); title('YBeamPosition')
+% subplot(2,3,3),
+% plot(ebsd,header.SEM_Image./256,'micronbar','off','parent',gca);
+% title('SEM Image')
+% subplot(2,3,4), plot(ebsd,ebsd.x,'micronbar','off','parent',gca);
+% title('X-Sample Position')
+% subplot(2,3,5), plot(ebsd,ebsd.y,'micronbar','off','parent',gca);
+% title('Y-Sample Position')
+% subplot(2,3,6),
+% plot(ebsd,ebsd.prop.RadonQuality,'micronbar','off','parent',gca);
+% title('Quality')
 
 %% plot the phase map and quality map
 
@@ -140,11 +140,11 @@ grains_raw = calcGrains(ebsd('indexed'));
 % plot(grains_raw)
 
 gbThreshold = 5*degree; %set the MSet for the grain boundary angle threshold
-[grains,ebsd.grainId] = calcGrains(ebsd('indexed'),'angle',gbThreshold);
+[grains,ebsd.grainId] = calcGrains(ebsd,'angle',gbThreshold); %keep unindexed points for finding hardness indents 
 
 % Remove small grains -
 % e.g. misindexed points, and grains that are smaller than we want explore
-smallGrains = 10; % in pixels
+smallGrains = 0; % in pixels
 
 % cull the graindata to select only those with a grain size greater than the
 % small grains threshold values
@@ -165,4 +165,7 @@ clear smallGrains gbThreshold
 
 figure
 plot(grains)
+print('-dpng',[path 'grains_' file(1:end-3)])
 
+%% save workspace as mat file
+save([path file(1:end-3)])
