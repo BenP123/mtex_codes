@@ -164,7 +164,7 @@ grains = smooth(grains,3);
 clear smallGrains gbThreshold
 
 figure
-plot(grains)
+plot(grains,'linewidth',2)
 print('-dpng',[path 'grains_' file(1:end-3)])
 
 %% save workspace as mat file
